@@ -1,0 +1,220 @@
+---
+title: "Oxygen Isotopes in cellulose"
+output: html_notebook
+---
+#####  Isotope Dendrochronology
+#####  Mechanistic model of the Oxygen isotopes in cellulose.
+#####  COURSE: DISC, LTRR, UNIVERSITY OF ARIZONA. INSTRUCTORS: P. SZEJNER & S. BELMECHERI
+
+The following code and comments should further your experience of using tree ring and Oxygen isotopes in cellulose using R. This exercise relies upon estimations and measurements of the different factors that determine the oxygen isotopes in the cellulose that we can date in tree rings. The following calculations will be relying on the use of  the Craig Gordon model, and the Roden model.
+
+
+Craig H, Gordon L (1965) Deuterium and oxygen 18 variations in the ocean and the marine atmosphere. In: Tongiorgi E (ed) Stable Isotopes in Oceanographic Studies and Paleotemperatures. Consiglio Nazionale delle ricerche Laboratorio di Geologia Nucleare. Pisa, Spoleto, Italy, pp 9–130).
+
+
+Roden J, Lin G, Ehleringer JR (2000) A mechanistic model for interpretation of hydrogen and oxygen isotope ratios in tree-ring cellulose. Geochim Cosmochim Acta 64:21–35. https://doi.org/10.1016/S0016-7037(99)00195-7
+
+ 
+
+When it comes to stable Oxygen isotopes in cellulose (δ18Ocell), three dominant factors will contribute to how the δ18Ocell is recorded in tree rings. These three factors are;  
+1. The isotopic content of the source water.  
+2. The leaf evaporative enrichment effect.   
+3. The proportion of phloem sugars that exchange with source water during cellulose formation.   
+
+The signal of these three processes is integrated into the cambium during xylogenesis.
+
+The source of Oxygen in plants is coming from the water. In the following exercise, we will implement a mechanistic model in which we will follow the isotopic fractionation processes in which the isotopic ratios from the main molecules involved in cellulose formation are modified and fixed. And how this can be useful in tree-ring research. 
+
+I this exercise, you will model 3 different isotopic ratios in cellulose for diferente  environmental conditions. First, we will model the δ18Ocell from one environment with a sharp seasonal change like in the Southwestern US with a cool spring with moisture availability from the snowpack, followed by a pre-summer drought period,  ending with a humid monsoon season during summer.  Therefore, the relative humidity can progress from 50% (spring) to 30% (pre-summer drought) to 60%(monsoon) along these three seasonal periods, the temperatures will vary from 25, 33, 27 Celsius  and the isotopic source water will, in this excesrise  remain constant at -8 permil. at the end of the excersise you will will compare these modeled results with  real measurements  in tree rings form the South west where the trees are exposed to the kind of variations in relative humidity.
+
+![Seasonal relative humidity in Tucson (Belmecheri et al. 2018 PCE). Notice the large variations on the relative humidity and  we will run the  following model to predict what to expect in the Oxygen Isotopes in the cellulose formed along these seasonal progresion](figures/FIGURE1_RH.png)
+
+
+## PART 1: Oxygen isotopes from the source water. 
+
+In this document, the "source water" will be the isotopic ratio that the plants transport through the xylem up to the leaves. Thus, it is the starting point in which the isotopic effects will be recorded during all the steps. Hence, the importance of having a good estimation or measurement of it.
+
+```{r}
+
+#the isotopic values in diferent notations
+
+Source_18O <- -8 # This value  will be our source water and  will remain constant at -8 permill
+rsmow <- 0.0020052 # Oxygen Isotope ratio from STANDARD	SMOV
+Rsource= rsmow*(1+Source_18O/1000) # conversion to the Ratio with no standardization.
+
+# Estimation of the  isotopic value of the water vapor asuming  equilibrium between atmospheric vapor and source water!   remember to modify these values to the variability form the text above
+
+###########
+temperature <- c(40, 40, 40) # temp in celsius
+###########
+
+#summary of what is below! water_vapor = Source+(isotopic effect from the fase change under equilibrium and have to convert the temperature in Kalvin (273.15),... so we are on top of what is going on)
+water_vapor <-Source_18O +(-1*(1.137*(1000000/((temperature+273.15)^2))-0.4156*((1000/(temperature+273.15))-2.0667))) 
+
+#R atm  Oxy  isotope ratio, atmosph  water vapor
+Rwater_vapor= rsmow*(1+water_vapor/1000)
+#note!  I need help on figuring out this!
+```
+
+## PART 2: leaf water isotopic enrichment  
+
+Now that we have our source water and estimate the water vapor, then, we can focus on what will happen to this water at the leaf during transpiration.  
+
+The leaf water isotopic enrichment can be estimated using the Craig Gordon model of leaf water enrichment. This is because isotope values in the water inside the leaf are exposed to evaporation. The isotopic values of the reminding water inside the leaf will have a different isotopic value from the source value. This process will be highly dependent on the relative humidity, and we can apply the Craig Gordon model to estimate the isotopic values at the leaf level under certain relative humidity temperatures and stomatal conductance.  
+
+```{r}
+#Constants
+
+# br = boundary layer conductance. (mol m-2 s-1)
+br <-1 #considered reasonable value between 0.02 to 3 in Roden paper boundary layer resistance    
+ak <- 1.0285	# alpha_kappa, Kinetic Fractionation 
+akb <- 1.0189	# alpha_kappa_beta, Kinetic Fractionation boundary layer
+
+
+# Variables  remember to modify these values to the variability form the Figure 1
+
+###########
+Relative_humidity <- c(100, 100, 100)
+###########
+
+Stomatal_conductance <- 0.5
+```
+
+We already know that the source water has this values:
+``` {r}
+round (Rsource, digits = 4)
+```
+
+We already know that the water vapor could be close to has this values:
+``` {r}
+round(Rwater_vapor, digits = 4)
+``` 
+
+```{r}
+# a*  **equilibrium fractionation at leaf temperature  
+# The equilibrium fractionation factor, a* is temperature dependent 
+# (see Majoube, 1971, J. Chim. Phys. 58:1423-1436)
+alpha_star =exp((1.137*1000/(273.15+temperature)^2)-(0.4156/(273.15+temperature))-0.0020667)
+#R source O  isotope ratio, source water
+
+
+# barometric	pressure  (mmbar)  
+press_bar <- 77 #a good site average is 77.5 according to W, This need to be changed for the pressure level
+```
+
+Here we asume that the  vapor is saturated inside the leaf and we apply this formula tu calculate the vapor presure when saturated (Rh=100%) at the temperature we best estimate the plant is and call it "ei".
+
+```{r}
+
+ei <- (101325*exp((((-0.1299*(1-(373.16/(273.15 + temperature)))-0.6445)*(1-(373.16/(273.15 + temperature)))-1.976)*(1-(373.16/(273.15 + temperature)))+13.3185)*(1-(373.16/(273.15 + temperature)))))/1000
+
+#wi,  leaf water vapor, converted to mole fraction
+wi=ei/press_bar
+
+#ea ambient vapor pressure (kPa)
+ea_v <- (Relative_humidity/100)*ei
+
+#wa, ambient water vapor, mole fraction
+wa_v= ea_v/press_bar
+
+# VPD in (kPa)
+vpd =ei-ea_v 
+round(vpd, digits=4 )
+```
+Here we can see the differences in Vapour presure defficity along these three times during the growing season.
+``` {r}
+#Total Conductance in mol
+g = 1/(1/Stomatal_conductance + 1/br) # or 1/(rs+rb)
+
+# E leaf transpiration (mol m-2 s-1) # barbour 2004
+E_v_gs <- (wi-wa_v)*g
+
+#ws, leaf surface water vapor, mole frac Roden 2000, Ball (1987),
+ws_v_gs <- ((Stomatal_conductance*wi)-E_v_gs*(1-wi/2))/(Stomatal_conductance - E_v_gs/2)
+
+# es vapor pressure at leaf surface (kPa) higher pressure  than the atmosphere
+esl_v_gs <- ws_v_gs*press_bar
+
+round(esl_v_gs, digits = 2)
+round(ea_v, digits=2)
+
+```
+
+Lets recall some  values  that we already have estimated that will be  important to keep track and estimate the expectation on the leaf water enrichment:
+
+``` Rsource ```  Source water  
+```Rwater_vapor``` isotopic value of the water vapor     
+```ei``` Water vapor presure saturated inside the leaf    
+```ea_v```  Water vapor pressure atmosphere  
+```esl_v_gs``` Water vapor pressure at leaf surface  
+
+And some constants  like alpha_kappa, Kinetic Fractionation  and alpha_kappa_beta, Kinetic Fractionation boundary layer
+``` {r}
+ak <- 1.0285	# alpha_kappa, Kinetic Fractionation 
+akb <- 1.0189	# alpha_kappa_beta, Kinetic Fractionation boundary layer
+
+# here we estimate the Leaf water enrichment:
+Rleaf_v <- alpha_star*((ak*Rsource *
+                              ((ei-esl_v_gs)/ei))+
+                             (akb*Rsource *(esl_v_gs-ea_v)/ei)+
+                             (Rwater_vapor*ea_v/ei))
+
+# Rleaf_v now the leaf qwater is estimated in terms of R  and we must convert this value  on permill in rsmow Oxygen Isotope ratio from STANDARD	SMOV
+# Recall
+rsmow <- 0.0020052
+# we started on a value  of -10 permil now after  the evaporative enrichment  the leaf water has moverd  from -10 to 5 permil
+leaf_water_18O <- ((Rleaf_v/rsmow)-1)*1000
+round(leaf_water_18O, digits = 2)
+```
+
+## PART 3: isotopic signal in the Cellulose  
+
+Isotopic fractionation during sugar synthesis and mixing during cellulose synthesis. 
+
+Now, after we know the water where the sugars are made and transported in the phloem, we can use the leaf water and the Source_18O to estimate the result on the cellulose, take into consideration that during cellulose synthesis, the source water will have some influence on the result, and we usually use a 42 percent exchange.
+
+
+```{r}
+# Now   after we know the  water where the sugars are made and trasported in the floem  we can use the leaf water and the Source_18O to estimate the end result on the cellulose, take in consideration that during  cellulose sinthesisi  the source water will have some influence on the end result. and we usualy use a 42 percent exchange
+# and some constants
+
+epsilon_s <-  27 #Autotrophic fractionation Sucrose	
+epsilon_c <- 27	# Autotrophic fractionation Cellulose ## 0.0084*Tmin.ts^2-0.51*Tmin.ts+ 33.172 
+F_0 <- 0.42 # proportion of source water used during cellulose sinthesys
+
+cellulose_d18O= F_0*(Source_18O + epsilon_c) + (1 - F_0) * (leaf_water_18O+ epsilon_s) 
+
+```
+
+## PART 4: Comparison between modeled data and observations
+
+![Mechanistic modeling of tree‐ring cellulose δ18O and leaf water enrichment ΔL, and their sensitivities to relative humidity. (a) The Craig–Gordon model (CG) outputs are plotted from May to December, the period corresponding to cell wall thickening for all tree‐ring subdivisions. The yellow color lines correspond to the CG simulations of δ18O cellulose within the range of the proportion of exchangeable oxygen in cellulose (Pex) variability from 0.1 (thin line) to 0.7 (thick line). The gray horizontal bars correspond to the cell wall thickening (or cell‐maturation) period for each subdivision and are plotted on the mean of the δ18O measurements. The cell wall thickening phase was derived from microscopic phenological observations from Morino and Hughes (University of Arizona, unpublished observations, Table S3). The climate drivers used in the CG model to make δ18Ocel predictions were derived from PRISM data; (b) seasonal cycle of the CG mean leaf water enrichment (ΔL). The shaded gray color corresponds to the standard deviation of modelled ΔL. The dashed blue line in (a) and (b) indicates the average date of the monsoon onset; (c) modelled ΔL plotted versus relative humidity (RH) in % calculated at bimonthly resolution. The ΔL simulations were run using mean, minimum, and maximum RH. The range of RH for the hyper‐arid period of May and June are plotted in orange circles. The dark blue circles represent RH range observed for the monsoon season (July–August). The gray circles correspond to the range of RH observed from September to April (Belmecheri et al. 2018 PCE)](figures/FIGURE6.png)
+
+your estimations for the callulose oxygen Isotopes are:
+```{r}
+round(cellulose_d18O, digits = 2)
+```
+your estimations for the leaf water oxygen Isotopes are:
+```{r}
+round(leaf_water_18O, digits = 2)
+```
+
+###  Comparison between modeled data and observations, 
+Now with these values that you comared  write down your observations differences and  similarities between  the modeled data in this excersise and the measurements shown in the figure 2 above.  
+
+How do you think this tool is useful?
+
+What are the constrains or difficulties on impleenting this model for reliable analysis?
+
+
+Good luck!
+
+
+
+
+
+
+
+
+
+
