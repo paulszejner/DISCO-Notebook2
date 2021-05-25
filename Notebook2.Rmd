@@ -6,7 +6,7 @@ output: html_notebook
 #####  Mechanistic model of the Oxygen isotopes in cellulose.
 #####  COURSE: DISC, LTRR, UNIVERSITY OF ARIZONA. INSTRUCTORS: P. SZEJNER & S. BELMECHERI
 
-
+### Instructions:
 
 The following code and comments should further your experience of using tree ring and Oxygen isotopes in cellulose using R. This exercise relies upon estimations and measurements of the different factors that determine the oxygen isotopes in the cellulose that we can date in tree rings. The following calculations will be relying on the use of  the Craig Gordon model, and the Roden model.
 
@@ -16,8 +16,6 @@ Craig H, Gordon L (1965) Deuterium and oxygen 18 variations in the ocean and the
 
 Roden J, Lin G, Ehleringer JR (2000) A mechanistic model for interpretation of hydrogen and oxygen isotope ratios in tree-ring cellulose. Geochim Cosmochim Acta 64:21–35. https://doi.org/10.1016/S0016-7037(99)00195-7
 
- 
-You will need to download the R project from https://github.com/paulszejner/DISCO-Notebook2.git and set your own working directory. Once you open the ```Notebook2.Rproj``` in R studio you can open the ```Notebook1.Rmd``` file to proceed with this exercise.
 
 When it comes to stable Oxygen isotopes in cellulose (δ18Ocell), three dominant factors will contribute to how the δ18Ocell is recorded in tree rings. These three factors are;  
 1. The isotopic content of the source water.  
@@ -28,10 +26,12 @@ The signal of these three processes is integrated into the cambium during xyloge
 
 The source of Oxygen in plants is coming from the water. In the following exercise, we will implement a mechanistic model in which we will follow the isotopic fractionation processes in which the isotopic ratios from the main molecules involved in cellulose formation are modified and fixed. And how this can be useful in tree-ring research. 
 
-I this exercise, you will model three different isotopic ratios in cellulose for diferente  environmental conditions. First, we will model the δ18Ocell from one environment with a sharp seasonal change like in the Southwestern US with a cool spring with moisture availability from the snowpack, followed by a pre-summer drought period,  ending with a humid monsoon season during summer.  Therefore, the relative humidity can progress from 50% (spring) to 30% (pre-summer drought) to 60%(monsoon) along these three seasonal periods, the temperatures will vary from 25, 33, 27 Celsius  and the isotopic source water will, in this excesrise  remain constant at -8 permil. at the end of the excersise you will will compare these modeled results with  real measurements  in tree rings form the South west where the trees are exposed to the kind of variations in relative humidity.
+In this exercise, you will model three different isotopic ratios in cellulose for different environmental conditions. First, we will model the δ18Ocell from one environment with a sharp seasonal change like in the Southwestern US with a cool spring with moisture availability from the snowpack, followed by a pre-summer drought period,  ending with a humid monsoon season during summer.  Therefore, the relative humidity can progress from 50% (spring) to 30% (pre-summer drought) to 60%(monsoon) along these three seasonal periods, the temperatures will vary from 25, to 33, to 27 Celsius and the isotopic source water will, in this excesrise,  remain constant at -8 permill. At the end of the excersise, you will compare these three results with real measurements in tree rings form the South West where the trees are exposed to these kind of variations in relative humidity.
 
 ![Seasonal relative humidity in Tucson (Belmecheri et al. 2018 PCE). Notice the large variations on the relative humidity and  we will run the  following model to predict what to expect in the Oxygen Isotopes in the cellulose formed along these seasonal progresion](figures/FIGURE1_RH.png)
 
+##### Instructions on geting the R project going  
+You will need to download the R project from https://github.com/paulszejner/DISCO-Notebook2.git and set your own working directory. Once you open the ```Notebook2.Rproj``` in R studio you can open the ```Notebook2.Rmd``` file to proceed with this exercise.
 
 ## PART 1: Oxygen isotopes from the source water. 
 
@@ -61,9 +61,9 @@ Rwater_vapor= rsmow*(1+water_vapor/1000)
 
 ## PART 2: leaf water isotopic enrichment  
 
-Now that we have our source water and estimate the water vapor, then, we can focus on what will happen to this water at the leaf during transpiration.  
+Now that we have our source water and estimate the water vapor, then we can focus on what will happen to this water at the leaf during transpiration.  
 
-The leaf water isotopic enrichment can be estimated using the Craig Gordon model of leaf water enrichment. This is because isotope values in the water inside the leaf are exposed to evaporation. The isotopic values of the reminding water inside the leaf will have a different isotopic value from the source value. This process will be highly dependent on the relative humidity, and we can apply the Craig Gordon model to estimate the isotopic values at the leaf level under certain relative humidity temperatures and stomatal conductance.  
+The leaf water isotopic enrichment can be estimated using the Craig Gordon model of leaf water enrichment because the water inside the leaf is exposed to evaporation. The isotopic values of the reminding water inside the leaf will have a different isotopic value from the source ```Rsource < leaf_water_18O```  . This process will depend on relative humidity, and we can apply the Craig Gordon model to estimate the isotopic values at the leaf level under certain relative humidity temperatures and stomatal conductance. 
 
 ```{r}
 #Constants
@@ -105,7 +105,7 @@ alpha_star =exp((1.137*1000/(273.15+temperature)^2)-(0.4156/(273.15+temperature)
 press_bar <- 77 #a good site average is 77.5 according to W, This need to be changed for the pressure level
 ```
 
-Here we asume that the  vapor is saturated inside the leaf and we apply this formula tu calculate the vapor presure when saturated (Rh=100%) at the temperature we best estimate the plant is and call it "ei".
+Here we assume that the vapor is saturated inside the leaf. We apply this formula to calculate the vapor pressure when saturated (Rh=100%) at the temperature we best estimate the plant is and call it ```"ei"```.
 
 ```{r}
 
@@ -162,7 +162,7 @@ Rleaf_v <- alpha_star*((ak*Rsource *
                              (akb*Rsource *(esl_v_gs-ea_v)/ei)+
                              (Rwater_vapor*ea_v/ei))
 
-# Rleaf_v now the leaf qwater is estimated in terms of R  and we must convert this value  on permill in rsmow Oxygen Isotope ratio from STANDARD	SMOV
+# Rleaf_v now the leaf water is estimated in terms of R  and we must convert this value  on permill in rsmow Oxygen Isotope ratio from STANDARD	SMOV
 # Recall
 rsmow <- 0.0020052
 # we started on a value  of -10 permil now after  the evaporative enrichment  the leaf water has moverd  from -10 to 5 permil
