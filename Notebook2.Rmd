@@ -1,69 +1,81 @@
 ---
-title: "Oxygen Isotopes in cellulose"
+title: "Mechanistic model of the Oxygen isotope in tree ring cellulose"
 output: html_notebook
 ---
 #####  Isotope Dendrochronology
-#####  Mechanistic model of the Oxygen isotopes in cellulose.
 #####  COURSE: DISC, LTRR, UNIVERSITY OF ARIZONA. INSTRUCTORS: P. SZEJNER & S. BELMECHERI
 
 ### Instructions:
 
-The following code and comments should further your experience of using tree ring and Oxygen isotopes in cellulose using R. This exercise relies upon estimations and measurements of the different factors that determine the oxygen isotopes in the cellulose that we can date in tree rings. The following calculations will be relying on the use of  the Craig Gordon model, and the Roden model.
+The following code and comments should further your experience of using a mechanistic model to understand the isotopic fractionation mechanisms underlying Oxygen isotope (d18O) in tree ring cellulose. This exercise will focus on the main determinants (variables and parameters) of cellulose d18O including: (1) source water isotope ratio, (2) leaf water isotopic enrichment, and (3) biochemical fractionation at the site of sucrose production and cellulose synthesis.
+
+The exercise and the mechanistic model correspond to the process based models termed "Craig-Gordon" * model, and the "Roden"** model.
 
 
-Craig H, Gordon L (1965) Deuterium and oxygen 18 variations in the ocean and the marine atmosphere. In: Tongiorgi E (ed) Stable Isotopes in Oceanographic Studies and Paleotemperatures. Consiglio Nazionale delle ricerche Laboratorio di Geologia Nucleare. Pisa, Spoleto, Italy, pp 9–130).
+* Craig H, Gordon L (1965) Deuterium and oxygen 18 variations in the ocean and the marine atmosphere. In: Tongiorgi E (ed) Stable Isotopes in Oceanographic Studies and Paleotemperatures. Consiglio Nazionale delle ricerche Laboratorio di Geologia Nucleare. Pisa, Spoleto, Italy, pp 9–130).
 
 
-Roden J, Lin G, Ehleringer JR (2000) A mechanistic model for interpretation of hydrogen and oxygen isotope ratios in tree-ring cellulose. Geochim Cosmochim Acta 64:21–35. https://doi.org/10.1016/S0016-7037(99)00195-7
+** Roden J, Lin G, Ehleringer JR (2000) A mechanistic model for interpretation of hydrogen and oxygen isotope ratios in tree-ring cellulose. Geochim Cosmochim Acta 64:21–35. https://doi.org/10.1016/S0016-7037(99)00195-7
 
 
-When it comes to stable Oxygen isotopes in cellulose (δ18Ocell), three dominant factors will contribute to how the δ18Ocell is recorded in tree rings. These three factors are;  
+The stable Oxygen isotope composition of cellulose (δ18Ocell) is determined by three factors/processes:  
 1. The isotopic content of the source water.  
 2. The leaf evaporative enrichment effect.   
 3. The proportion of phloem sugars that exchange with source water during cellulose formation.   
 
-The signal of these three processes is integrated into the cambium during xylogenesis.
+The signal of these three processes is integrated into the cambium during xylogenesis. The goal of this exercise is to: (1) implement a mechanistic model to account for all these factors processes and their associated fractionations, (2) to use this mechanistic model to interpret variations of cellulose d18O. 
 
-The source of Oxygen in plants is coming from the water. In the following exercise, we will implement a mechanistic model in which we will follow the isotopic fractionation processes in which the isotopic ratios from the main molecules involved in cellulose formation are modified and fixed. And how this can be useful in tree-ring research. 
+You will simulate three different isotopic ratios in tree ring cellulose for different environmental conditions. These environmental condition reflect the growing season variability of relative humidity and precipitation experienced by trees growing in the US Southwest (See Figure 1). The growing season in this region is characterized by a bimodal distribution of precipitation (Winter-snowpack and Summer-Monsoon). The relative humidity varies from dry spring to humid summer. The two periods are separated by a hyper arid period where with low precipitation and extremely low relative humidity. Accordingly, the variables in the model will vary as follows:    
+* The relative humidity from 50% (spring) to 30% (pre-summer drought) to 60% (monsoon).  
+* The mean air temperature will vary from 25, to 33, to 27 Celsius.  
+* The source water will remain constant at -8 permill.     
 
-In this exercise, you will model three different isotopic ratios in cellulose for different environmental conditions. First, we will model the δ18Ocell from one environment with a sharp seasonal change like in the Southwestern US with a cool spring with moisture availability from the snowpack, followed by a pre-summer drought period,  ending with a humid monsoon season during summer.  Therefore, the relative humidity can progress from 50% (spring) to 30% (pre-summer drought) to 60%(monsoon) along these three seasonal periods, the temperatures will vary from 25, to 33, to 27 Celsius and the isotopic source water will, in this excesrise,  remain constant at -8 permill. At the end of the excersise, you will compare these three results with real measurements in tree rings form the South West where the trees are exposed to these kind of variations in relative humidity.
+At the end of the exercise, you will compare the simulated 18O cellulose for the 3 seasonal variations of RH (and temperature) with measurements of cellulose d18O in tree rings from a site located in the US Southwest.
 
-![Seasonal relative humidity in Tucson (Belmecheri et al. 2018 PCE). Notice the large variations on the relative humidity and  we will run the  following model to predict what to expect in the Oxygen Isotopes in the cellulose formed along these seasonal progresion](figures/FIGURE1_RH.png)
+![Figure 1: Seasonal relative humidity in HEL-Catalina Mountains (Arizona) (Belmecheri et al. 2018 PCE). Notice the large variations of relative humidity.](figures/FIGURE1_RH.png)
 
-##### Instructions on geting the R project going  
+##### Instructions   
 You will need to download the R project from https://github.com/paulszejner/DISCO-Notebook2.git and set your own working directory. Once you open the ```Notebook2.Rproj``` in R studio you can open the ```Notebook2.Rmd``` file to proceed with this exercise.
 
-## PART 1: Oxygen isotopes from the source water. 
+## PART 1: Source Water
 
-In this document, the "source water" noted as ```Source_18O``` will be the isotopic ratio that the plant transport through the xylem up to the leaves. Thus, it is the starting point in which the isotopic effects will be recorded during all the steps. Hence, the importance of having a good estimation or measurement of it.
+The d18O of source water noted  as ```Source_18O``` is the isotopic ratio of the water transported through the xylem up to the leaves. This is derived from direct precipitation, soil water or 
+Thus, it is the starting point of d18O that will be modified by the isotopic effects (fractionations) during all the steps leading to its fixation in tree ring cellulose. Having a robust estimation or measurement of source water d18O is therefore paramount.    
 
+Here, the source water is set up at a fixed value:
 ```{r}
+Source_18O <- -8 # This is the isotopic value of the source water and  will remain constant at -8 permill during this  exercise
+```
+Then, it is converted to an isotopic ratio with regard to the standard VSMOW:  
+```{r}
+rsmow <- 0.0020052 # Oxygen Isotope ratio from STANDARD	VSMOW
+Rsource= rsmow*(1+Source_18O/1000) 
+```
 
-#the isotopic values in diferent notations
+Next, the  isotopic value of the water vapor is estimated based on source water d18O and leaf temperature, assuming equilibrium between atmospheric vapor and source water.  Water vapor can be estimates as follows:  
 
-Source_18O <- -8 # This is the isotopic value of the source water and  will remain constant at -8 permill during this  excersise
-rsmow <- 0.0020052 # Oxygen Isotope ratio from STANDARD	SMOV
-Rsource= rsmow*(1+Source_18O/1000) # conversion to the Ratio with no standardization.
+water_vapor = Source water + the equilibrium fractionation between liquid water and vapor.  
 
-# Estimation of the  isotopic value of the water vapor asuming  equilibrium between atmospheric vapor and source water!   remember to modify these values to the variability form the text above
+The equilibrium fractionation varies as a function of temperature.  
 
-###########
-temperature <- c(40, 40, 40) # temp in celsius youo will need to modify
-###########
+water vapor can be calculated as follows:  
+```{r}
+# The 3 temperature values need to be modified to reflect the seasonality described in the introduction
+temperature <- c(40, 40, 40) # temperature here is in Celsius 
 
-#summary of what is below! water_vapor = Source+(isotopic effect from the fase change under equilibrium and have to convert the temperature in Kalvin (273.15),... so we are on top of what is going on)
+# the temperature in the equation below refers to the leaf temperature in degrees Celsius and is cnverted to Kelvin (273.15)
 water_vapor <-Source_18O +(-1*(1.137*(1000000/((temperature+273.15)^2))-0.4156*((1000/(temperature+273.15))-2.0667))) 
+```
 
-#R atm  Oxy  isotope ratio, atmosph  water vapor
+Then, it is converted to an isotopic ratio with regard to the standard VSMOW:  
+```{r}
 Rwater_vapor= rsmow*(1+water_vapor/1000)
-#note!  I need help on figuring out this!
+#note!  I need help on figuring out this! What is needed?
 ```
 
 ## PART 2: leaf water isotopic enrichment  
 
-Now that we have our source water and estimate the water vapor, then we can focus on what will happen to this water at the leaf during transpiration.  
-
-The leaf water isotopic enrichment can be estimated using the Craig Gordon model of leaf water enrichment because the water inside the leaf is exposed to evaporation. The isotopic values of the reminding water inside the leaf will have a different isotopic value from the source ```Rsource < leaf_water_18O```  . This process will depend on relative humidity, and we can apply the Craig Gordon model to estimate the isotopic values at the leaf level under certain relative humidity temperatures and stomatal conductance. 
+During plant transpiration, the heavier H218O evaporates and diffuses more slowly through the stomata than does H216O, leaving leaf water enriched in 18O. At steady state and considering the leaf as a single and isotopically well-mixed water pool, the leaf water isotopic enrichment can be estimated using the Craig Gordon model.
 
 ```{r}
 #Constants
@@ -207,10 +219,10 @@ Now with these values that you comared  write down your observations differences
 
 How do you think this tool is useful?
 
-What are the constrains or difficulties on impleenting this model for reliable analysis?
+What are the constrains or difficulties on implementing this model for reliable analysis?
 
 
-Good luck!
+
 
 
 
