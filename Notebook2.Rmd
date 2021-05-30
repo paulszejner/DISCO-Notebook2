@@ -34,13 +34,12 @@ At the end of the exercise, you will compare the simulated 18O cellulose for the
 
 ![Figure 1: Seasonal relative humidity in HEL-Catalina Mountains (Arizona) (Belmecheri et al. 2018 PCE). Notice the large variations of relative humidity.](figures/FIGURE1_RH.png)
 
-##### Instructions   
-You will need to download the R project from https://github.com/paulszejner/DISCO-Notebook2.git and set your own working directory. Once you open the ```Notebook2.Rproj``` in R studio you can open the ```Notebook2.Rmd``` file to proceed with this exercise.
+
+* You will need to download the R project from https://github.com/paulszejner/DISCO-Notebook2.git and set your own working directory. Once you open the ```Notebook2.Rproj``` in R studio you can open the ```Notebook2.Rmd``` file to proceed with this exercise.
 
 ## PART 1: Source Water
 
-The d18O of source water noted  as ```Source_18O``` is the isotopic ratio of the water transported through the xylem up to the leaves. This is derived from direct precipitation, soil water or 
-Thus, it is the starting point of d18O that will be modified by the isotopic effects (fractionations) during all the steps leading to its fixation in tree ring cellulose. Having a robust estimation or measurement of source water d18O is therefore paramount.    
+The d18O of source water noted  as ```Source_18O``` is the isotopic ratio of the water transported through the xylem up to the leaves. This water is derived from direct precipitation, soil water. Thus, it is the starting point of d18O that will be modified by the isotopic effects (fractionations) during all the steps leading to its fixation in tree ring cellulose. Having a robust estimation or measurement of source water d18O is therefore paramount.    
 
 Here, the source water is set up at a fixed value:
 ```{r}
