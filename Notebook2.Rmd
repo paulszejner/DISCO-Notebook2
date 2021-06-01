@@ -5,7 +5,7 @@ output: html_notebook
 #####  Isotope Dendrochronology
 #####  COURSE: DISC, LTRR, UNIVERSITY OF ARIZONA. INSTRUCTORS: P. SZEJNER & S. BELMECHERI
 
-### Instructions:
+### Instructions :
 
 The following code and comments should further your experience of using a mechanistic model to understand the isotopic fractionation mechanisms underlying Oxygen isotope (d18O) in tree ring cellulose. This exercise will focus on the main determinants (variables and parameters) of cellulose d18O including: (1) source water isotope ratio, (2) leaf water isotopic enrichment, and (3) biochemical fractionation at the site of sucrose production and cellulose synthesis.
 
