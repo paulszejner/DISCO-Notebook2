@@ -9,13 +9,13 @@ output: html_notebook
 
 The following code and comments should further your experience of using a mechanistic model to understand the isotopic fractionation mechanisms underlying Oxygen isotope (d18O) in tree ring cellulose. This exercise will focus on the main determinants (variables and parameters) of cellulose d18O including: (1) source water isotope ratio, (2) leaf water isotopic enrichment, and (3) biochemical fractionation at the site of sucrose production and cellulose synthesis.
 
-The exercise and the mechanistic model correspond to the process based models termed "Craig-Gordon" * model, and the "Roden"** model.
+The exercise and the mechanistic model correspond to the process based models termed "Craig-Gordon" model [1], and the "Roden" model [2].
 
 
-* Craig H, Gordon L (1965) Deuterium and oxygen 18 variations in the ocean and the marine atmosphere. In: Tongiorgi E (ed) Stable Isotopes in Oceanographic Studies and Paleotemperatures. Consiglio Nazionale delle ricerche Laboratorio di Geologia Nucleare. Pisa, Spoleto, Italy, pp 9–130).
+[1] Craig H, Gordon L (1965) Deuterium and oxygen 18 variations in the ocean and the marine atmosphere. In: Tongiorgi E (ed) Stable Isotopes in Oceanographic Studies and Paleotemperatures. Consiglio Nazionale delle ricerche Laboratorio di Geologia Nucleare. Pisa, Spoleto, Italy, pp 9–130).
 
 
-** Roden J, Lin G, Ehleringer JR (2000) A mechanistic model for interpretation of hydrogen and oxygen isotope ratios in tree-ring cellulose. Geochim Cosmochim Acta 64:21–35. https://doi.org/10.1016/S0016-7037(99)00195-7
+[2] Roden J, Lin G, Ehleringer JR (2000) A mechanistic model for interpretation of hydrogen and oxygen isotope ratios in tree-ring cellulose. Geochim Cosmochim Acta 64:21–35. https://doi.org/10.1016/S0016-7037(99)00195-7
 
 
 The stable Oxygen isotope composition of cellulose (δ18Ocell) is determined by three factors/processes:  
@@ -48,7 +48,7 @@ Source_18O <- -8 # This is the isotopic value of the source water and  will rema
 ```
 Then, it is converted to an isotopic ratio with regard to the standard VSMOW:  
 ```{r}
-rsmow <- 0.0020052 # Oxygen Isotope ratio from STANDARD	VSMOW
+rsmow <- 0.0020052 # Oxygen Isotope ratio of the STANDARD	VSMOW
 Rsource= rsmow*(1+Source_18O/1000) 
 ```
 
@@ -58,7 +58,6 @@ water_vapor = Source water + the equilibrium fractionation between liquid water 
 
 The equilibrium fractionation varies as a function of temperature.  
 
-water vapor can be calculated as follows:  
 ```{r}
 # The 3 temperature values need to be modified to reflect the seasonality described in the introduction
 temperature <- c(40, 40, 40) # temperature here is in Celsius 
