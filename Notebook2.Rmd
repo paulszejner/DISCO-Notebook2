@@ -39,7 +39,8 @@ At the end of the exercise, you will compare the simulated 18O cellulose for the
 
 ## PART 1: Source Water
 
-The d18O of source water noted  as ```Source_18O``` is the isotopic ratio of the water transported through the xylem up to the leaves. This water is derived from direct precipitation, soil water. Thus, it is the starting point of d18O that will be modified by the isotopic effects (fractionations) during all the steps leading to its fixation in tree ring cellulose. Having a robust estimation or measurement of source water d18O is therefore paramount.    
+The d18O of source water noted  as ```Source_18O``` is the isotopic ratio of the water transported through the xylem up to the leaves. This water is derived from direct precipitation and soil water taken up by the roots. This process does not alter the original d18O.
+Thus, source water is the starting point of d18O that will be modified by the isotopic effects (fractionations) during all the steps leading to its fixation in tree ring cellulose. Having a robust estimation or measurement of source water d18O is therefore paramount.    
 
 Here, the source water is set up at a fixed value:
 ```{r}
@@ -51,15 +52,35 @@ rsmow <- 0.0020052 # Oxygen Isotope ratio of the STANDARD	VSMOW
 Rsource= rsmow*(1+Source_18O/1000) 
 ```
 
-Next, the  isotopic value of the water vapor is estimated based on source water d18O and leaf temperature, assuming equilibrium between atmospheric vapor and source water.  Water vapor can be estimates as follows:  
+
+## PART 2: leaf water isotopic enrichment  
+
+During plant transpiration, the heavier H218O evaporates and diffuses more slowly through the stomata than does H216O, leaving leaf water enriched in 18O. At steady state and considering the leaf as a single and isotopically well-mixed water pool, the leaf water isotopic enrichment can be estimated using the Craig Gordon model as follows:
+
+
+- De is of evaporative site water (leaf) above the source.  
+- Epsilon_plus is the equilibrium fractionation between liquid water and vapor.  
+- Epsilon_k is the kinectic fractionation for combined diffusion through stomata and the boundary layer.  
+- Dv is the isotopic enrichment of atmospheric vapor compared to source water.  
+- wa/wi is the ratio of the water vapor mole fraction in the air relative to that in the intercellular air spaces. This is also relative humidity assuming leaf and air temperature are equal.  
+### Variables
+
+```{r}
+# The 3 temperature values need to be modified to reflect the seasonality described in the introduction
+temperature <- c(40, 40, 40) # temperature here is in Celsius 
+Relative_humidity <- c(100, 100, 100)
+
+```
+
+### Water Vapor (Dv)
+
+The  isotopic value of the water vapor is estimated based on source water d18O and leaf temperature, assuming equilibrium between atmospheric vapor and source water.  Water vapor can be estimates as follows:  
 
 water_vapor = Source water + the equilibrium fractionation between liquid water and vapor.  
 
 The equilibrium fractionation varies as a function of temperature.  
 
 ```{r}
-# The 3 temperature values need to be modified to reflect the seasonality described in the introduction
-temperature <- c(40, 40, 40) # temperature here is in Celsius 
 
 # the temperature in the equation below refers to the leaf temperature in degrees Celsius and is cnverted to Kelvin (273.15)
 water_vapor <-Source_18O +(-1*(1.137*(1000000/((temperature+273.15)^2))-0.4156*((1000/(temperature+273.15))-2.0667))) 
@@ -71,9 +92,10 @@ Rwater_vapor= rsmow*(1+water_vapor/1000)
 #note!  I need help on figuring out this! What is needed?
 ```
 
-## PART 2: leaf water isotopic enrichment  
 
-During plant transpiration, the heavier H218O evaporates and diffuses more slowly through the stomata than does H216O, leaving leaf water enriched in 18O. At steady state and considering the leaf as a single and isotopically well-mixed water pool, the leaf water isotopic enrichment can be estimated using the Craig Gordon model.
+
+
+
 
 ```{r}
 #Constants
