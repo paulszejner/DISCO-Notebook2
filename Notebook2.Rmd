@@ -59,6 +59,7 @@ Rsource= rsmow*(1+Source_18O/1000)
 During plant transpiration, the heavier H218O evaporates and diffuses more slowly through the stomata than does H216O, leaving leaf water enriched in 18O. At steady state and considering the leaf as a single and isotopically well-mixed water pool, the leaf water isotopic enrichment can be estimated using the Craig Gordon model as follows:
 
 
+
 - De is the isotopic enrichment of evaporative site water (leaf) above the source.  
 - Epsilon_plus is the equilibrium fractionation between liquid water and vapor.  
 - Epsilon_k is the kinectic fractionation for combined diffusion through stomata and the boundary layer.  
@@ -140,70 +141,59 @@ g = 1/(1/Stomatal_conductance + 1/br) # or 1/(rs+rb)  in mol
 ```
 
 #### Leaf transpiration 
+Transpiration will depend on water vapor mole fraction in the air, in the leaf and on total conductance as follows:
 ``` {r}
-E_v_gs <- (wi-wa)*g #(mol m-2 s-1) # barbour 2004
+E <- (wi-wa)*g #(mol m-2 s-1) # barbour 2004
 ```
 
 #### Leaf surface water vapor
 ``` {r}
-ws_v_gs <- ((Stomatal_conductance*wi)-E_v_gs*(1-wi/2))/(Stomatal_conductance - E_v_gs/2) #mole fraction Roden (2000), Ball (1987).
+ws <- ((Stomatal_conductance*wi)-E*(1-wi/2))/(Stomatal_conductance - E/2) #mole fraction Roden (2000), Ball (1987).
 ```
 
 #### Vapor pressure at leaf surface 
 ``` {r}
-esl_v_gs <- ws_v_gs*press_bar #(kPa) higher pressure  than the atmosphere
+esl <- ws*press_bar #(kPa) higher pressure  than the atmosphere
 ```
 
+### Estimating Leaf water isotopic enrichment
 
-round(esl_v_gs, digits = 2)
-round(ea_v, digits=2)
-
-```
-
-
-### RECAP
-
-We already know that the source water has this values:
-``` {r}
-round (Rsource, digits = 4)
-```
-
-We already know that the water vapor could be close to has this values:
-``` {r}
-round(Rwater_vapor, digits = 4)
-``` 
-
-
-
-Here we can see the differences in Vapour presure defficit along these three times during the growing season.
-
-
-Lets recall some  values  that we already have estimated that will be  important to keep track and estimate the expectation on the leaf water enrichment:
+Lets recall the estimated variables necessary to calculate leaf water
 
 ``` Rsource ```  Source water  
 ```Rwater_vapor``` isotopic value of the water vapor     
-```ei``` Water vapor presure saturated inside the leaf    
-```ea_v```  Water vapor pressure atmosphere  
-```esl_v_gs``` Water vapor pressure at leaf surface  
+```ei``` Water vapor pressure inside the leaf    
+```ea```  Water vapor pressure of the air  
+```esl``` Water vapor pressure at leaf surface  
 
-And some constants  like alpha_kappa, Kinetic Fractionation  and alpha_kappa_beta, Kinetic Fractionation boundary layer
+
+The values can be rounded as follows:
 ``` {r}
-ak <- 1.0285	# alpha_kappa, Kinetic Fractionation 
-akb <- 1.0189	# alpha_kappa_beta, Kinetic Fractionation boundary layer
+round (Rsource, digits = 4)
+round(Rwater_vapor, digits = 4)
+round(esl, digits = 2)
+round(ea, digits=2)
+round(ei, digits=2)
+```
 
-# here we estimate the Leaf water enrichment:
-Rleaf_v <- alpha_star*((ak*Rsource *
-                              ((ei-esl_v_gs)/ei))+
-                             (akb*Rsource *(esl_v_gs-ea_v)/ei)+
-                             (Rwater_vapor*ea_v/ei))
+The leaf water enrichment can be estimated as follows:
+``` {r}
+Rleaf <- alpha_star*((ak*Rsource *
+                              ((ei-esl)/ei))+
+                             (akb*Rsource *(esl-ea)/ei)+
+                             (Rwater_vapor*ea/ei))
+``` 
 
-# Rleaf_v now the leaf water is estimated in terms of R  and we must convert this value  on permill in rsmow Oxygen Isotope ratio from STANDARD	SMOV
-# Recall
+The leaf water enrichment is estimated in terms of isotopic ratio (R). It should be converted  to permill values as follows:
+
+``` {r}
 rsmow <- 0.0020052
-# we started on a value  of -10 permil now after  the evaporative enrichment  the leaf water has moverd  from -10 to 5 permil
-leaf_water_18O <- ((Rleaf_v/rsmow)-1)*1000
+leaf_water_18O <- ((Rleaf/rsmow)-1)*1000
 round(leaf_water_18O, digits = 2)
 ```
+
+
+
 
 ## PART 3: isotopic signal in the Cellulose  
 
