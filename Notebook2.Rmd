@@ -269,11 +269,6 @@ Use linera regression statistics (r^2^) to discuss model performance.
 
 Question 9: What model parameter or variable have the most influence on cellulose 18 prediction and its comparison to measurements (RH, source water,else?)
 
-<<<<<<< HEAD
-Question 10: What are the advantages and constrains for implementing a forward mechanistic model for interpretation of inter-annual or seasonal variations measured in tree-ring cellulose d18O?
-=======
-Question 10: What are the advantages and constrains for implementing a forward mechanistic model for interpreting variations (inter-annual or seasonal) of tree-ring cellulose d18O?
->>>>>>> 90b09a233279d16b6e78f3eedb31654ab925a5f7
 
 
 
