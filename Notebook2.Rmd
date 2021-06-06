@@ -25,7 +25,8 @@ The stable Oxygen isotope composition of cellulose (δ18Ocell) is determined by 
 
 The signal of these three processes is integrated into the cambium during xylogenesis. The goal of this exercise is to: (1) implement a mechanistic model to account for all these factors processes and their associated fractionations, (2) to use this mechanistic model to interpret variations of cellulose d18O. 
 
-You will simulate three different isotopic ratios in tree ring cellulose for different environmental conditions. These environmental condition reflect the growing season variability of relative humidity and precipitation experienced by trees growing in the US Southwest (See Figure 1). The growing season in this region is characterized by a bimodal distribution of precipitation (Winter-snowpack and Summer-Monsoon). The relative humidity varies from dry spring to humid summer. The two periods are separated by a hyper arid period with low precipitation and extremely low relative humidity. Accordingly, the variables in the model will vary as follows:    
+You will simulate three different isotopic ratios in tree ring cellulose for different environmental conditions. These environmental condition reflect the growing season variability of relative humidity and precipitation experienced by trees growing in the US Southwest (See Figure 1). The growing season in this region is characterized by a bimodal distribution of precipitation (Winter-snowpack and Summer-Monsoon). The relative humidity varies from dry spring to humid summer. The two periods are separated by a hyper arid period with low precipitation and extremely low relative humidity. Accordingly, the variables in the model will vary as follows:  
+
 * The relative humidity from 50% (spring) to 30% (pre-summer drought) to 60% (monsoon).  
 * The mean air temperature will vary from 25, to 33, to 27 Celsius.  
 * The source water will remain constant at -8 permill.     
@@ -58,21 +59,35 @@ Rsource= rsmow*(1+Source_18O/1000)
 During plant transpiration, the heavier H218O evaporates and diffuses more slowly through the stomata than does H216O, leaving leaf water enriched in 18O. At steady state and considering the leaf as a single and isotopically well-mixed water pool, the leaf water isotopic enrichment can be estimated using the Craig Gordon model as follows:
 
 
-- De is of evaporative site water (leaf) above the source.  
+- De is the isotopic enrichment of evaporative site water (leaf) above the source.  
 - Epsilon_plus is the equilibrium fractionation between liquid water and vapor.  
 - Epsilon_k is the kinectic fractionation for combined diffusion through stomata and the boundary layer.  
 - Dv is the isotopic enrichment of atmospheric vapor compared to source water.  
 - wa/wi is the ratio of the water vapor mole fraction in the air relative to that in the intercellular air spaces. This is also relative humidity assuming leaf and air temperature are equal.  
-### Variables
+
+### Climate Variables/Inputs
 
 ```{r}
-# The 3 temperature values need to be modified to reflect the seasonality described in the introduction
+# The 3 temperature  and Relative humidity values need to be modified to reflect the seasonality described in the introduction
+
 temperature <- c(40, 40, 40) # temperature here is in Celsius 
-Relative_humidity <- c(100, 100, 100)
+Relative_humidity <- c(100, 100, 100) # RH is in %
 
 ```
 
-### Water Vapor (Dv)
+### Constants
+These constants will be used to estimate/calculate the various model parameters, specifically
+the water vapor mole fraction in the air and in the intercellular air spaces.
+```{r}
+br <-1 # boundary layer conductance. (mol m-2 s-1), considered reasonable value between 0.02 to 3 in Roden paper boundary layer resistance.
+ak <- 1.0285	# alpha_kappa, Kinetic Fractionation 
+akb <- 1.0189	# alpha_kappa_beta, Kinetic Fractionation boundary layer
+Stomatal_conductance <- 0.5 # stomatal conductance to water vapor
+press_bar <- 77 # barometric	pressure  (mmbar)  
+```
+
+### Model Parameters/Variables
+#### Water Vapor (Dv)
 
 The  isotopic value of the water vapor is estimated based on source water d18O and leaf temperature, assuming equilibrium between atmospheric vapor and source water.  Water vapor can be estimates as follows:  
 
@@ -81,8 +96,7 @@ water_vapor = Source water + the equilibrium fractionation between liquid water 
 The equilibrium fractionation varies as a function of temperature.  
 
 ```{r}
-
-# the temperature in the equation below refers to the leaf temperature in degrees Celsius and is cnverted to Kelvin (273.15)
+# the temperature in the equation below refers to the leaf temperature in degrees Celsius and is converted to Kelvin (273.15)
 water_vapor <-Source_18O +(-1*(1.137*(1000000/((temperature+273.15)^2))-0.4156*((1000/(temperature+273.15))-2.0667))) 
 ```
 
@@ -92,28 +106,63 @@ Rwater_vapor= rsmow*(1+water_vapor/1000)
 #note!  I need help on figuring out this! What is needed?
 ```
 
-
-
-
-
+#### Alpha *
+The equilibrium fractionation at leaf temperature  is temperature dependent (see Majoube, 1971, J. Chim. Phys. 58:1423-1436)  
 
 ```{r}
-#Constants
-
-# br = boundary layer conductance. (mol m-2 s-1)
-br <-1 #considered reasonable value between 0.02 to 3 in Roden paper boundary layer resistance    
-ak <- 1.0285	# alpha_kappa, Kinetic Fractionation 
-akb <- 1.0189	# alpha_kappa_beta, Kinetic Fractionation boundary layer
-
-
-# Variables  remember to modify these values to the variability form the Figure 1
-
-###########
-Relative_humidity <- c(100, 100, 100)
-###########
-
-Stomatal_conductance <- 0.5
+alpha_star =exp((1.137*1000/(273.15+temperature)^2)-(0.4156/(273.15+temperature))-0.0020667)
 ```
+
+#### Water vapor mole fraction in the intercellular air spaces
+
+Here we assume that the vapor is saturated inside the leaf. We apply this formula to calculate the vapor pressure when saturated (Rh=100%) at the temperature we best estimate the plant is and call it ```"ei"```.
+```{r}
+ei <- (101325*exp((((-0.1299*(1-(373.16/(273.15 + temperature)))-0.6445)*(1-(373.16/(273.15 + temperature)))-1.976)*(1-(373.16/(273.15 + temperature)))+13.3185)*(1-(373.16/(273.15 + temperature)))))/1000
+```
+
+Then leaf water vapor is converted to mole fraction as follows:
+```{r}
+wi=ei/press_bar
+```
+
+#### Water vapor mole fraction in the air
+```{r}
+ea <- (Relative_humidity/100)*ei
+```
+
+Then water vapor in the air is converted to mole fraction as follows:
+```{r}
+wa= ea/press_bar
+```
+
+#### Total Conductance
+``` {r}
+g = 1/(1/Stomatal_conductance + 1/br) # or 1/(rs+rb)  in mol
+```
+
+#### Leaf transpiration 
+``` {r}
+E_v_gs <- (wi-wa)*g #(mol m-2 s-1) # barbour 2004
+```
+
+#### Leaf surface water vapor
+``` {r}
+ws_v_gs <- ((Stomatal_conductance*wi)-E_v_gs*(1-wi/2))/(Stomatal_conductance - E_v_gs/2) #mole frac Roden 2000, Ball (1987)
+```
+
+#### Vapor pressure at leaf surface 
+``` {r}
+esl_v_gs <- ws_v_gs*press_bar #(kPa) higher pressure  than the atmosphere
+```
+
+
+round(esl_v_gs, digits = 2)
+round(ea_v, digits=2)
+
+```
+
+
+### RECAP
 
 We already know that the source water has this values:
 ``` {r}
@@ -125,55 +174,10 @@ We already know that the water vapor could be close to has this values:
 round(Rwater_vapor, digits = 4)
 ``` 
 
-```{r}
-# a*  **equilibrium fractionation at leaf temperature  
-# The equilibrium fractionation factor, a* is temperature dependent 
-# (see Majoube, 1971, J. Chim. Phys. 58:1423-1436)
-alpha_star =exp((1.137*1000/(273.15+temperature)^2)-(0.4156/(273.15+temperature))-0.0020667)
-#R source O  isotope ratio, source water
 
 
-# barometric	pressure  (mmbar)  
-press_bar <- 77 #a good site average is 77.5 according to W, This need to be changed for the pressure level
-```
+Here we can see the differences in Vapour presure defficit along these three times during the growing season.
 
-Here we assume that the vapor is saturated inside the leaf. We apply this formula to calculate the vapor pressure when saturated (Rh=100%) at the temperature we best estimate the plant is and call it ```"ei"```.
-
-```{r}
-
-ei <- (101325*exp((((-0.1299*(1-(373.16/(273.15 + temperature)))-0.6445)*(1-(373.16/(273.15 + temperature)))-1.976)*(1-(373.16/(273.15 + temperature)))+13.3185)*(1-(373.16/(273.15 + temperature)))))/1000
-
-#wi,  leaf water vapor, converted to mole fraction
-wi=ei/press_bar
-
-#ea ambient vapor pressure (kPa)
-ea_v <- (Relative_humidity/100)*ei
-
-#wa, ambient water vapor, mole fraction
-wa_v= ea_v/press_bar
-
-# VPD in (kPa)
-vpd =ei-ea_v 
-round(vpd, digits=4 )
-```
-Here we can see the differences in Vapour presure defficity along these three times during the growing season.
-``` {r}
-#Total Conductance in mol
-g = 1/(1/Stomatal_conductance + 1/br) # or 1/(rs+rb)
-
-# E leaf transpiration (mol m-2 s-1) # barbour 2004
-E_v_gs <- (wi-wa_v)*g
-
-#ws, leaf surface water vapor, mole frac Roden 2000, Ball (1987),
-ws_v_gs <- ((Stomatal_conductance*wi)-E_v_gs*(1-wi/2))/(Stomatal_conductance - E_v_gs/2)
-
-# es vapor pressure at leaf surface (kPa) higher pressure  than the atmosphere
-esl_v_gs <- ws_v_gs*press_bar
-
-round(esl_v_gs, digits = 2)
-round(ea_v, digits=2)
-
-```
 
 Lets recall some  values  that we already have estimated that will be  important to keep track and estimate the expectation on the leaf water enrichment:
 
@@ -248,6 +252,9 @@ What are the constrains or difficulties on implementing this model for reliable 
 
 
 
+# VPD in (kPa)
+vpd =ei-ea_v 
+round(vpd, digits=4 )
 
 
 
