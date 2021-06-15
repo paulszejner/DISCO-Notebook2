@@ -28,7 +28,7 @@ The signal of these three processes is integrated into the cambium during xyloge
 
 You will simulate three different isotopic ratios in tree ring cellulose for different environmental conditions. These environmental condition reflect the growing season variability of relative humidity and precipitation experienced by trees growing in the US Southwest (See Figure 1). The growing season in this region is characterized by a bimodal distribution of precipitation (Winter-snowpack and Summer-Monsoon). The relative humidity varies from dry spring to humid summer. The two periods are separated by a hyper arid period with low precipitation and extremely low relative humidity. Accordingly, the variables in the model will vary as follows:  
 
-* The relative humidity from 50% (spring) to 30% (pre-summer drought) to 60% (monsoon).  
+* The relative humidity from 40% (spring) to 10% (pre-summer drought) to 60% (monsoon).  
 * The mean air temperature will vary from 25, to 33, to 27 Celsius.  
 * The source water will remain constant at -8 permill.     
 
@@ -45,7 +45,7 @@ Thus, source water is the starting point of d18O that will be modified by the is
 
 Here, the source water is set at a fixed value:
 ```{r}
-Source_18O <- -8 # This is the isotopic value of the source water and  will remain constant at -8 permill during this  exercise
+Source_18O <- c(-10,-8) # This is the isotopic value of the source water and  will remain constant at -8 permill during this  exercise
 ```
 Then, it is converted to an isotopic ratio with regard to the standard VSMOW:  
 ```{r}
@@ -75,8 +75,8 @@ the boundary layer,
 ```{r}
 # The three temperature and Relative humidity values need to be modified to reflect the seasonality described in the introduction (See Figure 1).
 
-temperature <- c(40, 40, 40) # temperature here is in Celsius 
-Relative_humidity <- c(100, 100, 100) # RH is in %
+temperature <- c(13, 18) # temperature here is in Celsius 
+Relative_humidity <- c(25, 50) # RH is in %
 ```
 
 ### Constants
@@ -177,8 +177,8 @@ Here is a recap of the estimated variables necessary to calculate leaf water fol
 The values can be rounded as follows:
 ``` {r}
 round (Rsource, digits = 4)
-round(Rwater_vapor, digits = 4)
-round(esl, digits = 2)
+round(Ra, digits = 4)
+round(es, digits = 2)
 round(ea, digits=2)
 round(ei, digits=2)
 ```
@@ -186,6 +186,7 @@ round(ei, digits=2)
 The leaf water enrichment can be estimated as follows:
 Remember to define the Xylem water (Rwx)
 ``` {r}
+Rwx <- Rsource
 Rl <- alpha_star*(
     (ak*Rwx *((ei-es)/ei))+
     (akb*Rwx *((es-ea)/ei))+
@@ -253,13 +254,14 @@ These predicted cellulose_d18O values can be compared to measurements of cellulo
 The annual ring was subdivided into two Earlywood parts (EW1 and EW2) and latewood (LW).
 The average values were:
 
-EW1 = 36 ± 1.3‰,
-EW2 = 34.63 ± 1.3‰
-LW =  33.81 ± 1.04‰.
+EW = 35
+LW = 31
 
 The observed cellulose d18O can be defined as follows:
 ```{r}
-observed_18Oc <- c(EW1,EW2,LW) 
+EW = 35
+LW = 31
+observed_18Oc <- c(EW,LW) 
 ```
 
 Question 8: Compare observed and predicted cellulose d18O. 
